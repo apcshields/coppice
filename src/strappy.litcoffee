@@ -1,12 +1,32 @@
-    loadScript = (url, callback) ->
-      script = document.createElement('script')
+    loadScripts = (scripts, callback) ->
 
-      script.addEventListener('load', callback)
+Only try to load the script if the corresponding value in the passed object is
+true.
 
-      script.setAttribute('src', url)
-      script.setAttribute('async', 'async')
+      urls = Object.keys(scripts).filter((s) ->
+        scripts[s]
+      )
 
-      document.body.appendChild(script)
+Load the remaining urls.
+
+      for url in urls
+        do (url) ->
+          script = document.createElement('script')
+
+          script.addEventListener('load', () ->
+            urls = urls.filter((s) ->
+              s isnt url
+            )
+
+If there aren't any unloaded scripts left, call the callback.
+
+            callback() if not urls.length
+          )
+
+          script.setAttribute('src', url)
+          script.setAttribute('async', 'async')
+
+          document.body.appendChild(script)
 
 This function holds everything we want to do, so that we can run it after jQuery
 loads, if that was necessary.
@@ -14,19 +34,8 @@ loads, if that was necessary.
     strap = () ->
       alert('strap')
 
-First, check whether we need to inject jQuery into the page. If yes, inject and
-run `strap` again on load.
-
-      if !window.jQuery?
-        return loadScript('https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js', strap)
-
-### Use jQuery to load this.
-
-      if !window._?
-        return loadScript('https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js', strap)
-
-We have jQuery and lodash. Relinquish control of `$` and `_` and then get them
-back as local variables.
+Since, by this point, we have jQuery and lodash. Relinquish control of `$` and
+`_` and then get them back as local variables.
 
       (($, _) ->
 
@@ -110,8 +119,13 @@ library description.
 
         alert(JSON.stringify(transaction, null, 2))
 
-      )(jQuery.noConflict(), _.noConflict())
+      )(jQuery.noConflict(), window._lodash = _.noConflict())
 
-### Store _'s noConflict version in a global variable.
+Conditionally load the various scripts that will make this much easier. Don't
+load them if their products already exist, if, for instance, the page hasn't
+been reloaded since the bookmarklet was last used.
 
-    strap()
+    loadScripts({
+      'https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js': not window.jQuery?
+      'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js': not window._lodash?
+    }, strap)
