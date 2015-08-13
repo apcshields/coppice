@@ -1,3 +1,65 @@
+thisLibrary
+-----------
+
+    thisLibrary =
+      oclcSymbol: 'IGC'
+      name: 'Goshen College Library'
+
+strapTemplate
+-------------
+
+    strapTemplate = '
+      <!doctype html>
+      <html class="no-js" lang="en">
+        <head>
+          <meta charset="utf-8">
+          <meta http-equiv="x-ua-compatible" content="ie=edge">
+        </head>
+        <body>
+          <div class="title">
+            <span class="label">Title:</span>
+            <span class="value">{{item.title}}</span>
+          </div>
+
+          <div class="author">
+            <span class="label">Author:</span>
+            <span class="value">{{item.author}}</span>
+          </div>
+
+          <div class="patron">
+            <span class="label">Patron:</span>
+            <span class="value">{{patron.name}}</span>
+          </div>
+
+          <div class="due_date">
+            <span class="label">Due Date:</span>
+            <span class="value">{{dueDate}}</span>
+          </div>
+
+          {{^canRenew}}
+          <div class="renew">
+            <span>No renewals</span>
+          </div>
+          {{/canRenew}}
+
+          <div class="return_to">
+            <span class="label">Patron, please return book to:</span>
+            <span class="value">{{borrower.name}}</span>
+          </div>
+
+          <div class="loan_from">
+            <span class="label">An Interlibrary Loan from:</span>
+            <span class="value">{{lender.name}} {{lender.oclcSymbol}}</span>
+          </div>
+        </body>
+      </html>
+    '
+
+loadScripts()
+-------------
+This function iterates over a list of script urls, loads them asynchronously,
+and calls our callback when all are loaded.
+
     loadScripts = (scripts, callback) ->
 
 Only try to load the script if the corresponding value in the passed object is
@@ -6,6 +68,8 @@ true.
       urls = Object.keys(scripts).filter((s) ->
         scripts[s]
       )
+
+      callback() if not urls.length
 
 Load the remaining urls.
 
@@ -28,14 +92,19 @@ If there aren't any unloaded scripts left, call the callback.
 
           document.body.appendChild(script)
 
+strap()
+-------
 This function holds everything we want to do, so that we can run it after jQuery
 loads, if that was necessary.
 
     strap = () ->
-      alert('strap')
 
 Since, by this point, we have jQuery and lodash. Relinquish control of `$` and
 `_` and then get them back as local variables.
+
+First, save lodash as a property of `window` so that we don't keep reloading it.
+
+      window._lodash = _.noConflict() if not window._lodash
 
       (($, _) ->
 
@@ -88,17 +157,14 @@ string.
 This is wrapped in an anonymous function to keep my variable workspace clean.
 Meh.
 
-        transaction.library = (() ->
+        otherLibrary = (() ->
           library = {}
 
 First, get the OCLC symbol.
 
           library.oclcSymbol = transactionPanel.find('.nd-pdlink').attr('href')?.match(/instSymbol=(.{3})/)[1]
 
-### We can't go any further, but maybe there is something intelligent we could
-do to recover?
-
-          return null if not library.oclcSymbol?
+          return { oclcSymbol: '', name: '' } if not library.oclcSymbol?
 
 Now the flow forks to handle borrows and loans differently.
 
@@ -114,12 +180,36 @@ library description.
             # Make an API request to the ILL policies directory.
             # "https://ill.sd00.worldcat.org/illpolicies/servicePolicy/servicePolicyAggregateFees?inst=#{library.oclcSymbol}&wskey={#wskey}"
 
+            library.name = ''
+
           return library
         )()
 
-        alert(JSON.stringify(transaction, null, 2))
+        if isBorrow
+          transaction.lender = otherLibrary
+          transaction.borrower = thisLibrary
+        else
+          transaction.lender = thisLibrary
+          transaction.borrower = otherLibrary
 
-      )(jQuery.noConflict(), window._lodash = _.noConflict())
+Make an iframe and load the strap in it.
+
+        strapFrame = (() ->
+          frame = $('#strappy-iframe')
+
+          frame = $(document.createElement('iframe')) if not frame[0]
+
+          frame.attr('id', 'strappy-iframe')
+          frame.attr('srcdoc', Mustache.render(strapTemplate, transaction))
+
+          frame.css('border', 'none')
+
+          $(document.body).append(frame)
+
+          return frame
+        )()
+
+      )(jQuery.noConflict(), window._lodash)
 
 Conditionally load the various scripts that will make this much easier. Don't
 load them if their products already exist, if, for instance, the page hasn't
@@ -128,4 +218,5 @@ been reloaded since the bookmarklet was last used.
     loadScripts({
       'https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js': not window.jQuery?
       'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js': not window._lodash?
+      'https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.1.3/mustache.min.js': not window.Mustache?
     }, strap)
