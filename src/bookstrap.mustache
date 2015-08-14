@@ -1,0 +1,58 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <style><%= css %></style>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <div role="navigation" class="nav navbar-nav hidden-print">
+      <button id="bookstrap-print" class="btn btn-default navbar-btn">Print</button>
+    </div>
+    <div class="bookstrap">
+      <div class="top">
+        <p class="title">
+          <strong>Title:</strong> <span class="value">{{item.title}}</span>
+        </p>
+
+        <p class="author">
+          <strong>Author:</strong> <span class="value">{{item.author}}</span>
+        </p>
+
+        <p class="barcode">
+          <span class="id">{{id}}</span>
+        </p>
+
+        <p class="patron">
+          <strong>Patron:</strong> <span class="value">{{patron.name}}</span>
+        </p>
+
+        <p class="due_date">
+          <strong>Due Date:</strong> <span class="value">{{dueDate}}</span>
+        </p>
+
+        {{^canRenew}}
+        <p class="renew">
+          <span>No renewals</span>
+        </p>
+        {{/canRenew}}
+      </div>
+
+      <div class="middle">
+        <p class="return_to">
+          <strong>Patron, please return book to:</strong><br/>
+          <span class="value">{{borrower.name}}</span>
+        </p>
+      </div>
+
+      <div class="bottom">
+        <p class="loan_from">
+          <strong>An Interlibrary Loan from:</strong><br/>
+          <span class="value">{{lender.name}} {{lender.oclcSymbol}}</span>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

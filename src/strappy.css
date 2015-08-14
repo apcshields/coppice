@@ -1,0 +1,26 @@
+@page {
+  margin: 0; /* See http://stackoverflow.com/questions/1960939/disabling-browser-print-options-headers-footers-margins-from-page?rq=1 */
+}
+
+@media print {
+  .bookstrap {
+    margin: 1in 0.75in;
+  }
+}
+
+.bookstrap {
+  width: 2.75in;
+  height: 100%;
+}
+
+.top {
+  margin-bottom: 90px;
+}
+
+.middle {
+  margin-bottom: 90px;
+}
+
+.id {
+  font-family: monospace;
+}

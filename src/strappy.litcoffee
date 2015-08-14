@@ -8,52 +8,7 @@ thisLibrary
 strapTemplate
 -------------
 
-    strapTemplate = '
-      <!doctype html>
-      <html class="no-js" lang="en">
-        <head>
-          <meta charset="utf-8">
-          <meta http-equiv="x-ua-compatible" content="ie=edge">
-        </head>
-        <body>
-          <div class="title">
-            <span class="label">Title:</span>
-            <span class="value">{{item.title}}</span>
-          </div>
-
-          <div class="author">
-            <span class="label">Author:</span>
-            <span class="value">{{item.author}}</span>
-          </div>
-
-          <div class="patron">
-            <span class="label">Patron:</span>
-            <span class="value">{{patron.name}}</span>
-          </div>
-
-          <div class="due_date">
-            <span class="label">Due Date:</span>
-            <span class="value">{{dueDate}}</span>
-          </div>
-
-          {{^canRenew}}
-          <div class="renew">
-            <span>No renewals</span>
-          </div>
-          {{/canRenew}}
-
-          <div class="return_to">
-            <span class="label">Patron, please return book to:</span>
-            <span class="value">{{borrower.name}}</span>
-          </div>
-
-          <div class="loan_from">
-            <span class="label">An Interlibrary Loan from:</span>
-            <span class="value">{{lender.name}} {{lender.oclcSymbol}}</span>
-          </div>
-        </body>
-      </html>
-    '
+    strapTemplate = '<%= strapTemplate %>'
 
 loadScripts()
 -------------
@@ -122,6 +77,7 @@ Collect transaction metadata.
 
         transaction =
           id: transactionPanel.find('.accordionRequestDetailsRequestId').text()
+          canRenew: isBorrow and false # Temporary
           item:
             title: transactionPanel.find('.yui-field-title:not(.editable)').text()
             author: transactionPanel.find('.yui-field-author:not(.editable)').text()
@@ -202,7 +158,33 @@ Make an iframe and load the strap in it.
           frame.attr('id', 'strappy-iframe')
           frame.attr('srcdoc', Mustache.render(strapTemplate, transaction))
 
-          frame.css('border', 'none')
+          frame.css(
+            top: 0
+            left: 'calc(50% - 1.375in)'
+            width: '2.75in'
+            height: '100%'
+            position: 'fixed'
+            border: '30px solid #FFF'
+            'z-index': 10000
+          )
+
+Make the barcode on frame load.
+
+          frame.one('load', () ->
+            window['_strappyBarcode'] = new Barcode({
+              height: '0.5in',
+              maxWidth: '2.5in',
+              thicknessFactor: 3
+            }) if not window['_strappyBarcode']?
+
+            _strappyBarcode.get(transaction.id, (barcode) ->
+              $(frame[0].contentDocument).find('.barcode').prepend(barcode)
+            , (error) ->
+              console.log(error)
+            )
+          )
+
+Add the iframe to the document.
 
           $(document.body).append(frame)
 
