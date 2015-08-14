@@ -41,8 +41,11 @@ module.exports = (grunt) ->
       mustache:
         options:
           data: () ->
+            strapTemplate = new String(fs.readFileSync('tmp/bookstrap.cssed.mustache'))
+            strapTemplate = strapTemplate.replace(/\n/g, '').replace(/(\W)\s{2,}(\W)/g, '$1$2')
+
             {
-              strapTemplate: fs.readFileSync('tmp/bookstrap.cssed.mustache')
+              strapTemplate: strapTemplate
             }
         files:
           'tmp/strappy.stached.litcoffee': ['src/strappy.litcoffee']

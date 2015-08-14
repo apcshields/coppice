@@ -3,9 +3,13 @@
 }
 
 @media print {
-  .bookstrap {
+  .bookstrap-print {
     margin: 1in 0.75in;
   }
+}
+
+body {
+  background: transparent;
 }
 
 .bookstrap {

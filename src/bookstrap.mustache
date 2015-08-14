@@ -4,14 +4,31 @@
     <meta charset="utf-8">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-    <style><%= css %></style>
+    <style>
+      /* <![CDATA[ */
+        <%= css %>
+      /* ]]> */
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
   </head>
   <body>
-    <div role="navigation" class="nav navbar-nav hidden-print">
-      <button id="bookstrap-print" class="btn btn-default navbar-btn">Print</button>
+    <div id="bookstrap-modal" class="modal fade hidden-print" data-backdrop="static">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Print bookstrap</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" id="bookstrap-print" class="btn btn-primary">Print</button>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="bookstrap">
+    <div class="bookstrap visible-print-block">
       <div class="top">
         <p class="title">
           <strong>Title:</strong> <span class="value">{{item.title}}</span>
@@ -21,9 +38,11 @@
           <strong>Author:</strong> <span class="value">{{item.author}}</span>
         </p>
 
-        <p class="barcode">
+        <p class="barcode pull-left">
           <span class="id">{{id}}</span>
         </p>
+
+        <div class="clearfix"></div>
 
         <p class="patron">
           <strong>Patron:</strong> <span class="value">{{patron.name}}</span>
@@ -50,9 +69,24 @@
       <div class="bottom">
         <p class="loan_from">
           <strong>An Interlibrary Loan from:</strong><br/>
-          <span class="value">{{lender.name}} {{lender.oclcSymbol}}</span>
+          <span class="value">{{lender.name}} ({{lender.oclcSymbol}})</span>
         </p>
       </div>
     </div>
+    <script>
+      /* <![CDATA[ */
+        $(function() {
+          var hideFrame = function() { $(window.parent.document).find('#strappy-iframe').hide(); };
+
+          var bookstrapForModal = $('.bookstrap').clone().removeClass('visible-print-block');
+
+          $('#bookstrap-modal .modal-body').append(bookstrapForModal);
+
+          $('#bookstrap-modal').modal('show');
+          $('button.close').click(hideFrame);
+          $('#bookstrap-print').click(function() { window.print(); hideFrame(); });
+        });
+      /* ]]> */
+    </script>
   </body>
 </html>

@@ -8,7 +8,7 @@ thisLibrary
 strapTemplate
 -------------
 
-    strapTemplate = '<%= strapTemplate %>'
+    strapTemplate = '''<%= strapTemplate %>'''
 
 loadScripts()
 -------------
@@ -157,18 +157,20 @@ Make an iframe and load the strap in it.
 
           frame.attr('id', 'strappy-iframe')
           frame.attr('srcdoc', Mustache.render(strapTemplate, transaction))
+          frame.attr('sandbox', 'allow-same-origin allow-scripts allow-modal')
 
           frame.css(
             top: 0
-            left: 'calc(50% - 1.375in)'
-            width: '2.75in'
+            left: 0
+            width: '100%'
             height: '100%'
             position: 'fixed'
-            border: '30px solid #FFF'
             'z-index': 10000
           )
 
-Make the barcode on frame load.
+          frame.show()
+
+On frame load, make the barcode.
 
           frame.one('load', () ->
             window['_strappyBarcode'] = new Barcode({
