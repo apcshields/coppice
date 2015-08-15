@@ -2,7 +2,9 @@ Configuration Variables
 -----------------------
 
     wskey = '''<%= wskey %>'''
-    thisLibrary = '''<%= thisLibrary %>'''
+    thisLibrary =
+      oclcSymbol: '''<%= thisLibrary.oclcSymbol %>'''
+      name: '''<%= thisLibrary.name %>'''
 
 strapTemplate
 -------------
