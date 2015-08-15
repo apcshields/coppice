@@ -1,9 +1,8 @@
-thisLibrary
------------
+Configuration Variables
+-----------------------
 
-    thisLibrary =
-      oclcSymbol: 'IGC'
-      name: 'Goshen College Library'
+    wskey = '''<%= wskey %>'''
+    thisLibrary = '''<%= thisLibrary %>'''
 
 strapTemplate
 -------------
