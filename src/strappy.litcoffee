@@ -80,8 +80,8 @@ Collect transaction metadata.
           id: transactionPanel.find('.accordionRequestDetailsRequestId').text()
           canRenew: isBorrow and false # Temporary
           item:
-            title: transactionPanel.find('.yui-field-title:not(.editable)').text()
-            author: transactionPanel.find('.yui-field-author:not(.editable)').text()
+            title: transactionPanel.find('[data="resource.title"]').text()
+            author: transactionPanel.find('[data="resource.author"]').text()
           patron:
             name: transactionPanel.find('.yui-field-name').val()
 
