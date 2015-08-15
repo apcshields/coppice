@@ -6,6 +6,7 @@
   "main": "strappy.js",
   "dependencies": {},
   "devDependencies": {
+    "cson": "^3.0.1",
     "grunt": "^0.4.5",
     "grunt-bookmarklet-wrapper": "^1.0.0",
     "grunt-contrib-clean": "^0.6.0",

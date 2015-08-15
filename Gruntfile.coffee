@@ -30,7 +30,7 @@ module.exports = (grunt) ->
         files:
           'dist/strappy.js': ['tmp/strappy.ugly.js']
     template:
-      css:
+      addCssToMustache:
         options:
           data: () ->
             {
@@ -38,15 +38,23 @@ module.exports = (grunt) ->
             }
         files:
           'tmp/bookstrap.cssed.mustache': ['src/bookstrap.mustache']
-      mustache:
+      addConfigToLitcoffee:
         options:
           data: () ->
+            # Get config variables from 'config.cson'.
+            cson = require 'cson'
+            _ = require 'lodash'
+
+            config = cson.parseCSONFile('config.default.cson')
+            _.extend(config, cson.parseCSONFile('config.cson'))
+
+            # Get the mustache strap template (which has had the css minified and added).
             strapTemplate = new String(fs.readFileSync('tmp/bookstrap.cssed.mustache'))
             strapTemplate = strapTemplate.replace(/\n/g, '').replace(/(\W)\s{2,}(\W)/g, '$1$2')
 
-            {
-              strapTemplate: strapTemplate
-            }
+            config.strapTemplate = strapTemplate
+
+            return config
         files:
           'tmp/strappy.stached.litcoffee': ['src/strappy.litcoffee']
     cssmin:
@@ -65,5 +73,5 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks('grunt-template');
   grunt.loadNpmTasks('grunt-contrib-cssmin')
 
-  grunt.registerTask('default', ['clean:dist', 'cssmin', 'template:css', 'template:mustache', 'coffee', 'concat', 'uglify', 'bookmarklet_wrapper', 'clean:tmp'])
-  grunt.registerTask('no-cleanup', ['clean:dist', 'cssmin', 'template:css', 'template:mustache', 'coffee', 'concat', 'uglify','bookmarklet_wrapper'])
+  grunt.registerTask('default', ['clean:dist', 'cssmin', 'template:addCssToMustache', 'template:addConfigToLitcoffee', 'coffee', 'concat', 'uglify', 'bookmarklet_wrapper', 'clean:tmp'])
+  grunt.registerTask('no-cleanup', ['clean:dist', 'cssmin', 'template:addCssToMustache', 'template:addConfigToLitcoffee', 'coffee', 'concat', 'uglify','bookmarklet_wrapper'])
