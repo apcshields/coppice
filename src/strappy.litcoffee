@@ -134,7 +134,7 @@ library description.
             library.name = transactionPanel.find(lenderStringListID + ' .suppliername').text()
           else
             # Make an API request to the ILL policies directory.
-            # "https://ill.sd00.worldcat.org/illpolicies/servicePolicy/servicePolicyAggregateFees?inst=#{library.oclcSymbol}&wskey={#wskey}"
+            # "https://ill.sd00.worldcat.org/illpolicies/servicePolicy/servicePolicyAggregateFees?inst=#{library.oclcSymbol}&wskey=#{wskey}"
 
             library.name = ''
 
@@ -147,6 +147,12 @@ library description.
         else
           transaction.lender = thisLibrary
           transaction.borrower = otherLibrary
+
+Determine whether or not renewals are possible.
+
+        # "https://ill.sd00.worldcat.org/illpolicies/servicePolicy/#{inst_id}?wskey=#{wskey}"
+        # May not be there... in which case need something indicating ambiguity.
+        # transaction.canRenew
 
 Make an iframe and load the strap in it.
 
