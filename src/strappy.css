@@ -3,8 +3,8 @@
 }
 
 @media print {
-  .bookstrap-print {
-    margin: 1in 0.75in;
+  .bookstrap.visible-print-block {
+    margin: 2in 0.75in 1in;
   }
 }
 
