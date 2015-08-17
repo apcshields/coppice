@@ -1,18 +1,19 @@
 Configuration Variables
------------------------
+=======================
 
     wskey = '''<%= wskey %>'''
     thisLibrary =
       oclcSymbol: '''<%= thisLibrary.oclcSymbol %>'''
       name: '''<%= thisLibrary.name %>'''
+    crossDomainProxy = '''<%= crossDomainProxy %>'''
 
 strapTemplate
--------------
+=============
 
     strapTemplate = '''<%= strapTemplate %>'''
 
 loadScripts()
--------------
+=============
 This function iterates over a list of script urls, loads them asynchronously,
 and calls our callback when all are loaded.
 
@@ -48,10 +49,23 @@ If there aren't any unloaded scripts left, call the callback.
 
           document.body.appendChild(script)
 
+worldcatNamespaceResolver()
+===========================
+This function allows us to use `document.evaluate()` with the heavily-namespaced
+xml documents the ILL policies directory API returns.
+
+    worldcatNamespaceResolver = (() ->
+      namespacePrefixes =
+        'ns10': 'http://worldcat.org/servicePolicyAggregateFees'
+
+      (namespacePrefix) ->
+        namespacePrefixes[namespacePrefix] || null
+    )()
+
 strap()
--------
-This function holds everything we want to do, so that we can run it after jQuery
-loads, if that was necessary.
+=======
+This function holds all the logic for what we want to do, so that we can run it
+after jQuery loads, if that was necessary.
 
     strap = () ->
 
@@ -95,49 +109,48 @@ clean string with the other library's name. It is particularly difficult for
 loans, which are the transactions in which it is more important for us to print
 the borrowing library's name on the bookstrap!
 
-For borrows, we pull the string from the page.
-
-(This turns out to be not a great string:
-
-'Indiana University, South Bend, South Bend, US-IN' versus
-'Franklin D Schurz Library
-Indiana University, South Bend'
-
-Maybe we should just do for borrows what we do for loans.)
-
-For loans, the best option seems to be pulling out the OCLC symbol and using the
+The best option seems to be pulling out the OCLC symbol and using the
 ILL policies directory API to request an XML file which will include a useful
-string.
+string, especially since we can also try to get renewal information.
 
 ---
 
-This is wrapped in an anonymous function to keep my variable workspace clean.
-Meh.
-
-        otherLibrary = (() ->
-          library = {}
-
 First, get the OCLC symbol.
 
-          library.oclcSymbol = transactionPanel.find('.nd-pdlink').attr('href')?.match(/instSymbol=(.{3})/)[1]
+          otherLibrary =
+            oclcSymbol: transactionPanel.find('.nd-pdlink').attr('href')?.match(/instSymbol=(.{3})/)[1]
 
-          return { oclcSymbol: '', name: '' } if not library.oclcSymbol?
-
-Now the flow forks to handle borrows and loans differently.
-
-          if isBorrow
-
-Since this is a borrow, we can look through the 'lender string list' to find the
-library description.
-
-            lenderStringListID = "#lender-string-list-#{transaction.id}-#{library.oclcSymbol}"
-
-            library.name = transactionPanel.find(lenderStringListID + ' .suppliername').text()
+          if not otherLibrary.oclcSymbol?
+            otherLibrary = { oclcSymbol: '', name: '' }
           else
-            # Make an API request to the ILL policies directory.
-            # "https://ill.sd00.worldcat.org/illpolicies/servicePolicy/servicePolicyAggregateFees?inst=#{library.oclcSymbol}&wskey=#{wskey}"
 
-            library.name = ''
+Make an API request to the ILL policies directory.
+
+The wskey is sent as a url parameter so that the proxy doesn't need to be
+configured to accept an additional header on the 'OPTIONS' request.
+
+            $.ajax(crossDomainProxy,
+              data:
+                csurl: 'https://ill.sd00.worldcat.org/illpolicies/servicePolicy/servicePolicyAggregateFees'
+                inst: library.oclcSymbol
+                wskey: wskey
+              dataType: 'xml'
+            )
+            .done((data) ->
+              alias = document.evaluate('//ns10:institutionAlias', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue?.textContent
+              name = document.evaluate('//ns10:name', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue?.textContent
+
+              name = "#{alias}, #{name}" if alias?
+              name = '' if not name?
+
+              otherLibrary.name = name
+            )
+            .fail(() ->
+              otherLibrary.name = ''
+            )
+            .always(() ->
+
+            )
 
           return library
         )()
@@ -149,15 +162,26 @@ library description.
           transaction.lender = thisLibrary
           transaction.borrower = otherLibrary
 
-Determine whether or not renewals are possible.
+getRenewalInformation()
+-----------------------
+If this is a loan, we don't allow renewals.
+
+If this is a borrow, check the ILL policies directory. If renewals information
+is listed and is non-zero, renewals are possible. If renewals information is
+listed and is zero, renewals are not possible. If renewals information isn't
+listed, we're in am ambiguous state.
 
         # "https://ill.sd00.worldcat.org/illpolicies/servicePolicy/#{inst_id}?wskey=#{wskey}"
         # May not be there... in which case need something indicating ambiguity.
         # transaction.canRenew
 
-Make an iframe and load the strap in it.
+renderBookstrap()
+-----------------
+This function handles the actual rendering of the bookstrap from the mustache
+template in an iframe. It is called once the information-gathering AJAX calls to
+the ILL policies directory API have completed.
 
-        strapFrame = (() ->
+        renderBookstrap = (transaction) ->
           frame = $('#strappy-iframe')
 
           frame = $(document.createElement('iframe')) if not frame[0]
@@ -197,14 +221,19 @@ Add the iframe to the document.
 
           $(document.body).append(frame)
 
-          return frame
-        )()
-
       )(jQuery.noConflict(), window._lodash)
 
+Startup
+=======
 Conditionally load the various scripts that will make this much easier. Don't
 load them if their products already exist, if, for instance, the page hasn't
 been reloaded since the bookmarklet was last used.
+
+---
+
+May want to add [wicked-good-xpath](https://github.com/google/wicked-good-xpath)
+to this, so that `document.evaluate()` works in IE. (Would this bookmarklet work
+in IE?)
 
     loadScripts({
       'https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js': not window.jQuery?
