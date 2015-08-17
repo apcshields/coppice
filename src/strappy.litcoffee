@@ -107,14 +107,18 @@ Collect transaction metadata.
             author: transactionPanel.find('[data="resource.author"]').text()
           patron:
             name: transactionPanel.find('.yui-field-name').val()
-
-For some reason, loans don't use the `.yui-field-originalDueDate` syntax for the
-due date, so we have to search for the data field, which is consistent.
-
-          dueDate: transactionPanel.find('[data="returning.originalDueToSupplier"]').text()
           canRenew: false
           renewal:
             link: renewal.link
+
+For some reason, loans don't use the `.yui-field-originalDueDate` syntax for the
+due date, so we have to search for the data field, which is consistent. N.B. It
+may be either a static element or a form input, depending on the transaction
+status.
+
+        dueDateElement = transactionPanel.find('[data="returning.originalDueToSupplier"]')
+
+        transaction.dueDate = if dueDateElement.text() then dueDateElement.text() else dueDateElement.val()
 
 Calculate the renewal deadline.
 
