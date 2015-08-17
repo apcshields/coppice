@@ -117,43 +117,40 @@ string, especially since we can also try to get renewal information.
 
 First, get the OCLC symbol.
 
-          otherLibrary =
-            oclcSymbol: transactionPanel.find('.nd-pdlink').attr('href')?.match(/instSymbol=(.{3})/)[1]
+        otherLibrary =
+          oclcSymbol: transactionPanel.find('.nd-pdlink').attr('href')?.match(/instSymbol=(.{3})/)[1]
 
-          if not otherLibrary.oclcSymbol?
-            otherLibrary = { oclcSymbol: '', name: '' }
-          else
+        if not otherLibrary.oclcSymbol?
+          otherLibrary = { oclcSymbol: '', name: '' }
+        else
 
 Make an API request to the ILL policies directory.
 
 The wskey is sent as a url parameter so that the proxy doesn't need to be
 configured to accept an additional header on the 'OPTIONS' request.
 
-            $.ajax(crossDomainProxy,
-              data:
-                csurl: 'https://ill.sd00.worldcat.org/illpolicies/servicePolicy/servicePolicyAggregateFees'
-                inst: library.oclcSymbol
-                wskey: wskey
-              dataType: 'xml'
-            )
-            .done((data) ->
-              alias = document.evaluate('//ns10:institutionAlias', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue?.textContent
-              name = document.evaluate('//ns10:name', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue?.textContent
+          $.ajax(crossDomainProxy,
+            data:
+              csurl: 'https://ill.sd00.worldcat.org/illpolicies/servicePolicy/servicePolicyAggregateFees'
+              inst: library.oclcSymbol
+              wskey: wskey
+            dataType: 'xml'
+          )
+          .done((data) ->
+            alias = document.evaluate('//ns10:institutionAlias', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue?.textContent
+            name = document.evaluate('//ns10:name', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue?.textContent
 
-              name = "#{alias}, #{name}" if alias?
-              name = '' if not name?
+            name = "#{alias}, #{name}" if alias?
+            name = '' if not name?
 
-              otherLibrary.name = name
-            )
-            .fail(() ->
-              otherLibrary.name = ''
-            )
-            .always(() ->
+            otherLibrary.name = name
+          )
+          .fail(() ->
+            otherLibrary.name = ''
+          )
+          .always(() ->
 
-            )
-
-          return library
-        )()
+          )
 
         if isBorrow
           transaction.lender = otherLibrary
