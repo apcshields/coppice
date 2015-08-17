@@ -8,7 +8,7 @@ module.exports = (grunt) ->
         sourceMap: false
       default:
         files:
-          'tmp/strappy.js': 'tmp/strappy.stached.litcoffee'
+          'tmp/strappy.js': 'tmp/strappy.tmpld.litcoffee'
           'tmp/barcode.js': 'src/barcode/barcode.litcoffee'
     uglify:
       options:
@@ -30,14 +30,14 @@ module.exports = (grunt) ->
         files:
           'dist/strappy.js': ['tmp/strappy.ugly.js']
     template:
-      addCssToMustache:
+      addCssToHtml:
         options:
           data: () ->
             {
               css: fs.readFileSync('tmp/strappy.min.css')
             }
         files:
-          'tmp/bookstrap.cssed.mustache': ['src/bookstrap.mustache']
+          'tmp/bookstrap.cssed.html': ['src/bookstrap.html']
       addConfigToLitcoffee:
         options:
           data: () ->
@@ -48,15 +48,19 @@ module.exports = (grunt) ->
             config = cson.parseCSONFile('config.default.cson')
             _.extend(config, cson.parseCSONFile('config.cson'))
 
-            # Get the mustache strap template (which has had the css minified and added).
-            strapTemplate = new String(fs.readFileSync('tmp/bookstrap.cssed.mustache'))
+            # Get the Handlebars strap template and the strap document (which has had the css minified and added).
+            strapDocument = new String(fs.readFileSync('tmp/bookstrap.cssed.html'))
+            strapDocument = strapDocument.replace(/\n/g, '').replace(/(\W)\s{2,}(\W)/g, '$1$2')
+
+            strapTemplate = new String(fs.readFileSync('src/bookstrap.handlebars'))
             strapTemplate = strapTemplate.replace(/\n/g, '').replace(/(\W)\s{2,}(\W)/g, '$1$2')
 
+            config.strapDocument = strapDocument
             config.strapTemplate = strapTemplate
 
             return config
         files:
-          'tmp/strappy.stached.litcoffee': ['src/strappy.litcoffee']
+          'tmp/strappy.tmpld.litcoffee': ['src/strappy.litcoffee']
     cssmin:
       options:
         sourceMap: false
@@ -73,5 +77,5 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks('grunt-template');
   grunt.loadNpmTasks('grunt-contrib-cssmin')
 
-  grunt.registerTask('default', ['clean:dist', 'cssmin', 'template:addCssToMustache', 'template:addConfigToLitcoffee', 'coffee', 'concat', 'uglify', 'bookmarklet_wrapper', 'clean:tmp'])
-  grunt.registerTask('no-cleanup', ['clean:dist', 'cssmin', 'template:addCssToMustache', 'template:addConfigToLitcoffee', 'coffee', 'concat', 'uglify','bookmarklet_wrapper'])
+  grunt.registerTask('default', ['clean:dist', 'cssmin', 'template:addCssToHtml', 'template:addConfigToLitcoffee', 'coffee', 'concat', 'uglify', 'bookmarklet_wrapper', 'clean:tmp'])
+  grunt.registerTask('no-cleanup', ['clean:dist', 'cssmin', 'template:addCssToHtml', 'template:addConfigToLitcoffee', 'coffee', 'concat', 'uglify','bookmarklet_wrapper'])

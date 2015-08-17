@@ -1,0 +1,53 @@
+<div class="bookstrap visible-print-block">
+  <div class="top">
+    <p class="title">
+      <strong>Title:</strong> <span class="value">{{item.title}}</span>
+    </p>
+
+    <p class="author">
+      <strong>Author:</strong> <span class="value">{{item.author}}</span>
+    </p>
+
+    <p class="barcode pull-left">
+      <span class="id">{{id}}</span>
+    </p>
+
+    <div class="clearfix"></div>
+
+    <p class="patron">
+      <strong>Patron:</strong> <span class="value">{{patron.name}}</span>
+    </p>
+
+    <p class="due_date">
+      <strong>Due Date:</strong> <span class="value">{{dueDate}}</span>
+    </p>
+
+    {{#if canRenew}}
+    <p class="renew can-renew">
+      <span>You <strong>may</strong> be able to renew this item.<br/>
+        Request a renewal at <a>{{renewal.link}}</a><br/>
+        <strong>no later than</strong> {{renewal.dueDate}}</span>
+    </p>
+    {{else}}
+    <p class="renew cant-renew">
+      <span>No renewals</span>
+    </p>
+    {{/if}}
+  </div>
+
+  <div class="middle">
+    <p class="return_to">
+      <strong>Patron, please return book to:</strong><br/>
+      <span class="value">{{#borrower.name}}{{.}}<br/>{{/borrower.name}}
+        {{borrower.host}} ({{borrower.oclcSymbol}})</span>
+    </p>
+  </div>
+
+  <div class="bottom">
+    <p class="loan_from">
+      <strong>An Interlibrary Loan from:</strong><br/>
+      <span class="value">{{#lender.name}}{{.}}<br/>{{/lender.name}}
+        {{lender.host}} ({{lender.oclcSymbol}})</span>
+    </p>
+  </div>
+</div>

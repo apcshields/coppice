@@ -14,6 +14,7 @@ Configuration Variables
 strapTemplate
 =============
 
+    strapDocument = '''<%= strapDocument %>'''
     strapTemplate = '''<%= strapTemplate %>'''
 
 loadScripts()
@@ -85,7 +86,7 @@ First, save lodash as a property of `window` so that we don't keep reloading it.
 
 Compile the Handlebars template.
 
-        bookstrapHandlebarsTemplate = Handlebars.compile(strapTemplate) if not window.bookstrapHandlebarsTemplate
+        bookstrapHandlebarsTemplate = Handlebars.compile(strapTemplate)
 
 Get the currently active transaction panel.
 
@@ -237,52 +238,83 @@ Can't do anything here, since we can't look anything up.
 
 renderBookstrap()
 -----------------
-This function handles the actual rendering of the bookstrap from the mustache
-template in an iframe. It is called once the information-gathering AJAX calls to
-the ILL policies directory API have completed.
+Interperate the template with all the information we've gathered, make the
+barcode, and trigger the modal.
 
         renderBookstrap = () ->
-          frame = $('#strappy-iframe')
+          frameDocument = $(frame[0].contentDocument)
 
-          frame = $(document.createElement('iframe')) if not frame[0]
+          bookstrap = $(bookstrapHandlebarsTemplate(transaction))
 
-          frame.attr('id', 'strappy-iframe')
-          frame.attr('srcdoc', bookstrapHandlebarsTemplate(transaction))
-          frame.attr('sandbox', 'allow-same-origin allow-scripts allow-modal')
+          window._strappyBarcode = new Barcode({
+            height: '0.5in',
+            maxWidth: '2.5in',
+            thicknessFactor: 3
+          }) if not window._strappyBarcode?
 
-          frame.css(
-            top: 0
-            left: 0
-            width: '100%'
-            height: '100%'
-            position: 'fixed'
-            'z-index': 10000
+          _strappyBarcode.get(transaction.id)
+          .done((barcode) ->
+            bookstrap.find('.barcode').prepend(barcode)
+            barcode.next('.id').addClass('text-center').css('display', 'block').appendTo(barcode)
           )
+          .fail((error) ->
+            console.log(error)
+          )
+          .always(() ->
+            modalBookstrap = bookstrap.clone().removeClass('visible-print-block')
 
-          frame.show()
+            frameDocument.find('body').append(bookstrap)
+            frameDocument.find('.modal-body').append(modalBookstrap)
 
-On frame load, make the barcode.
+            hideFrame = () ->
+              frame.hide()
 
-          frame.one('load', () ->
-            window['_strappyBarcode'] = new Barcode({
-              height: '0.5in',
-              maxWidth: '2.5in',
-              thicknessFactor: 3
-            }) if not window['_strappyBarcode']?
-
-            _strappyBarcode.get(transaction.id, (barcode) ->
-              $(frame[0].contentDocument).find('.barcode').prepend(barcode)
-              barcode.next('.id').addClass('text-center').css('display', 'block').appendTo(barcode)
-            , (error) ->
-              console.log(error)
+            frameDocument.find('button.close, [data-dismiss="modal"]').click(hideFrame)
+            frameDocument.find('#bookstrap-print').click(() ->
+              frame[0].contentWindow.print()
+              hideFrame()
             )
+
+            frame.show()
+
+            frame[0].contentWindow.$('#bookstrap-modal').modal('show')
           )
+
+Now, start.
+
+Make the frame.
+
+        frame = $('#strappy-iframe')
+
+        frame = $(document.createElement('iframe')) if not frame[0]
+
+        frame.attr('id', 'strappy-iframe')
+        frame.attr('srcdoc', strapDocument)
+        frame.attr('sandbox', 'allow-same-origin allow-scripts allow-modal')
+
+        frame.css(
+          top: 0
+          left: 0
+          width: '100%'
+          height: '100%'
+          position: 'fixed'
+          'z-index': 10000
+        )
+
+Listen for when the frame is ready.
+
+        frameReadyDeferral = $.Deferred()
+
+        frame.one('bookstrap:frameReady', () ->
+          frameReadyDeferral.resolve()
+        )
 
 Add the iframe to the document.
 
-          $(document.body).append(frame)
+        $(document.body).append(frame)
 
-Now, start.
+Ask for additional data and, when the data is received, render the bookstrap and
+trigger the modal.
 
         getOtherLibraryInformation()
         .done((otherLibrary) ->
@@ -293,10 +325,8 @@ Now, start.
             transaction.lender = thisLibrary
             transaction.borrower = otherLibrary
 
-          getRenewalInformation(otherLibrary)
-          .done(() ->
-            renderBookstrap()
-          )
+          $.when(frameReadyDeferral, getRenewalInformation(otherLibrary))
+          .done(renderBookstrap)
         )
       )(jQuery.noConflict(), window._lodash)
 
