@@ -16,10 +16,6 @@ strapTemplate
 
     strapTemplate = '''<%= strapTemplate %>'''
 
-We'll define this later, once we know the Handlebars object is available.
-
-    handlebarsStrapTemplate = null
-
 loadScripts()
 =============
 This function iterates over a list of script urls, loads them asynchronously,
@@ -89,7 +85,7 @@ First, save lodash as a property of `window` so that we don't keep reloading it.
 
 Compile the Handlebars template.
 
-        handlebarsStrapTemplate = Handlebars.compile(strapTemplate) if not handlebarsStrapTemplate
+        bookstrapHandlebarsTemplate = Handlebars.compile(strapTemplate) if not window.bookstrapHandlebarsTemplate
 
 Get the currently active transaction panel.
 
@@ -251,7 +247,7 @@ the ILL policies directory API have completed.
           frame = $(document.createElement('iframe')) if not frame[0]
 
           frame.attr('id', 'strappy-iframe')
-          frame.attr('srcdoc', handlebarsStrapTemplate(transaction))
+          frame.attr('srcdoc', bookstrapHandlebarsTemplate(transaction))
           frame.attr('sandbox', 'allow-same-origin allow-scripts allow-modal')
 
           frame.css(
