@@ -7,11 +7,18 @@ Configuration Variables
       name: '''<%= thisLibrary.name %>'''
       host: '''<%= thisLibrary.host %>'''
     crossDomainProxy = '''<%= crossDomainProxy %>'''
+    renewal =
+      link: '''<%= renewal.link %>'''
+      daysBeforeDueDate: <%= renewal.daysBeforeDueDate %>
 
 strapTemplate
 =============
 
     strapTemplate = '''<%= strapTemplate %>'''
+
+We'll define this later, once we know the Handlebars object is available.
+
+    handlebarsStrapTemplate = null
 
 loadScripts()
 =============
@@ -80,6 +87,10 @@ First, save lodash as a property of `window` so that we don't keep reloading it.
 
       (($, _) ->
 
+Compile the Handlebars template.
+
+        handlebarsStrapTemplate = Handlebars.compile(strapTemplate) if not handlebarsStrapTemplate
+
 Get the currently active transaction panel.
 
         transactionPanel = $('.yui3-viewpanel:not(.yui3-viewpanel-hidden):not(.sidebar-accordion)')
@@ -94,7 +105,6 @@ Collect transaction metadata.
 
         transaction =
           id: transactionPanel.find('.accordionRequestDetailsRequestId').text()
-          canRenew: false
           item:
             title: transactionPanel.find('[data="resource.title"]').first().text()
             author: transactionPanel.find('[data="resource.author"]').text()
@@ -105,6 +115,13 @@ For some reason, loans don't use the `.yui-field-originalDueDate` syntax for the
 due date, so we have to search for the data field, which is consistent.
 
           dueDate: transactionPanel.find('[data="returning.originalDueToSupplier"]').text()
+          canRenew: false
+          renewal:
+            link: renewal.link
+
+Calculate the renewal deadline.
+
+        transaction.renewal.dueDate = moment(transaction.dueDate).subtract(renewal.daysBeforeDueDate, 'days').format('MM/DD/YYYY')
 
 The ILL interface doesn't give us a consistently straightforward way to get a
 clean string with the other library's name. It is particularly difficult for
@@ -208,7 +225,7 @@ each of which could have a different value set for `ns8:renewPeriod`.
                 if not renewPeriod?
                   transaction.canRenew = 'unknown'
                 else if renewPeriod = parseInt(renewPeriod) and renewPeriod > 0
-                    transaction.canRenew = true
+                  transaction.canRenew = true
               )
               .always(() ->
                 deferred.resolve()
@@ -234,7 +251,7 @@ the ILL policies directory API have completed.
           frame = $(document.createElement('iframe')) if not frame[0]
 
           frame.attr('id', 'strappy-iframe')
-          frame.attr('srcdoc', Mustache.render(strapTemplate, transaction))
+          frame.attr('srcdoc', handlebarsStrapTemplate(transaction))
           frame.attr('sandbox', 'allow-same-origin allow-scripts allow-modal')
 
           frame.css(
@@ -259,6 +276,7 @@ On frame load, make the barcode.
 
             _strappyBarcode.get(transaction.id, (barcode) ->
               $(frame[0].contentDocument).find('.barcode').prepend(barcode)
+              barcode.next('.id').addClass('text-center').css('display', 'block').appendTo(barcode)
             , (error) ->
               console.log(error)
             )
@@ -301,5 +319,6 @@ in IE?)
     loadScripts({
       'https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js': not window.jQuery?
       'https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.min.js': not window._lodash?
-      'https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.1.3/mustache.min.js': not window.Mustache?
+      'https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/3.0.3/handlebars.min.js': not window.Handlebars?
+      'https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.min.js': not window.moment?
     }, strap)

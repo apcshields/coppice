@@ -52,11 +52,17 @@
           <strong>Due Date:</strong> <span class="value">{{dueDate}}</span>
         </p>
 
-        {{^canRenew}}
-        <p class="renew">
+        {{#if canRenew}}
+        <p class="renew can-renew">
+          <span>You <strong>may</strong> be able to renew this item.<br/>
+            Request a renewal at <a>{{renewal.link}}</a><br/>
+            <strong>no later than</strong> {{renewal.dueDate}}</span>
+        </p>
+        {{else}}
+        <p class="renew cant-renew">
           <span>No renewals</span>
         </p>
-        {{/canRenew}}
+        {{/if}}
       </div>
 
       <div class="middle">

@@ -28,3 +28,9 @@ body {
 .id {
   font-family: monospace;
 }
+
+.bookstrap a {
+  color: black;
+
+  text-decoration: underline;
+}

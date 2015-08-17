@@ -4,3 +4,6 @@ thisLibrary:
   name: ''
   host: ''
 crossDomainProxy: ''
+renewal:
+  link: ''
+  daysBeforeDueDate: 0
