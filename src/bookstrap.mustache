@@ -62,14 +62,16 @@
       <div class="middle">
         <p class="return_to">
           <strong>Patron, please return book to:</strong><br/>
-          <span class="value">{{borrower.name}}</span>
+          <span class="value">{{#borrower.name}}{{.}}<br/>{{/borrower.name}}
+            {{borrower.host}} ({{borrower.oclcSymbol}})</span>
         </p>
       </div>
 
       <div class="bottom">
         <p class="loan_from">
           <strong>An Interlibrary Loan from:</strong><br/>
-          <span class="value">{{lender.name}} ({{lender.oclcSymbol}})</span>
+          <span class="value">{{#lender.name}}{{.}}<br/>{{/lender.name}}
+            {{lender.host}} ({{lender.oclcSymbol}})</span>
         </p>
       </div>
     </div>
@@ -83,7 +85,7 @@
           $('#bookstrap-modal .modal-body').append(bookstrapForModal);
 
           $('#bookstrap-modal').modal('show');
-          $('button.close').click(hideFrame);
+          $('button.close, [data-dismiss="modal"]').click(hideFrame);
           $('#bookstrap-print').click(function() { window.print(); hideFrame(); });
         });
       /* ]]> */

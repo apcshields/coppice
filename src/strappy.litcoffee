@@ -5,6 +5,7 @@ Configuration Variables
     thisLibrary =
       oclcSymbol: '''<%= thisLibrary.oclcSymbol %>'''
       name: '''<%= thisLibrary.name %>'''
+      host: '''<%= thisLibrary.host %>'''
     crossDomainProxy = '''<%= crossDomainProxy %>'''
 
 strapTemplate
@@ -56,6 +57,7 @@ xml documents the ILL policies directory API returns.
 
     worldcatNamespaceResolver = (() ->
       namespacePrefixes =
+        'ns8': 'http://worldcat.org/servicePolicyPolicy'
         'ns10': 'http://worldcat.org/servicePolicyAggregateFees'
 
       (namespacePrefix) ->
@@ -92,9 +94,9 @@ Collect transaction metadata.
 
         transaction =
           id: transactionPanel.find('.accordionRequestDetailsRequestId').text()
-          canRenew: isBorrow and false # Temporary
+          canRenew: false
           item:
-            title: transactionPanel.find('[data="resource.title"]').text()
+            title: transactionPanel.find('[data="resource.title"]').first().text()
             author: transactionPanel.find('[data="resource.author"]').text()
           patron:
             name: transactionPanel.find('.yui-field-name').val()
@@ -115,49 +117,61 @@ string, especially since we can also try to get renewal information.
 
 ---
 
-First, get the OCLC symbol.
+In order to do this, we need to make an asynchronous call, and, if it gives us
+enough information, make a second.
 
-        otherLibrary =
-          oclcSymbol: transactionPanel.find('.nd-pdlink').attr('href')?.match(/instSymbol=(.{3})/)[1]
+First, define the wrappers/processors of the asynchronous calls.
 
-        if not otherLibrary.oclcSymbol?
-          otherLibrary = { oclcSymbol: '', name: '' }
-        else
+getOtherLibraryInformation()
+----------------------------
+This function grabs the OCLC symbol from the ILL interface and uses the ILL
+policies directory API to get more information.
+
+        getOtherLibraryInformation = () ->
+          deferred = $.Deferred()
+
+Get the OCLC symbol.
+
+          otherLibrary =
+            id: ''
+            oclcSymbol: transactionPanel.find('.nd-pdlink').attr('href')?.match(/instSymbol=([^&]+)/)[1]
+            name: ''
+            host: ''
+
+          if not otherLibrary.oclcSymbol?
+            otherLibrary.oclcSymbol = ''
+
+            deferred.resolve(otherLibrary)
+          else
 
 Make an API request to the ILL policies directory.
 
 The wskey is sent as a url parameter so that the proxy doesn't need to be
 configured to accept an additional header on the 'OPTIONS' request.
 
-          $.ajax(crossDomainProxy,
-            data:
-              csurl: 'https://ill.sd00.worldcat.org/illpolicies/servicePolicy/servicePolicyAggregateFees'
-              inst: library.oclcSymbol
-              wskey: wskey
-            dataType: 'xml'
-          )
-          .done((data) ->
-            alias = document.evaluate('//ns10:institutionAlias', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue?.textContent
-            name = document.evaluate('//ns10:name', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue?.textContent
+            $.ajax(crossDomainProxy,
+              data:
+                csurl: 'https://ill.sd00.worldcat.org/illpolicies/servicePolicy/servicePolicyAggregateFees'
+                inst: otherLibrary.oclcSymbol
+                wskey: wskey
+              dataType: 'xml'
+            )
+            .done((data) ->
+              id = document.evaluate('//ns10:institutionId', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue?.textContent
 
-            name = "#{alias}, #{name}" if alias?
-            name = '' if not name?
+              otherLibrary.id = id if id?
 
-            otherLibrary.name = name
-          )
-          .fail(() ->
-            otherLibrary.name = ''
-          )
-          .always(() ->
+              otherLibrary.name = document.evaluate('//ns10:institutionAlias', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue?.textContent
+              otherLibrary.host = document.evaluate('//ns10:name', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue?.textContent
 
-          )
+              otherLibrary.name = '' if not otherLibrary.name?
+              otherLibrary.host = '' if not otherLibrary.host?
+            )
+            .always(() ->
+              deferred.resolve(otherLibrary)
+            )
 
-        if isBorrow
-          transaction.lender = otherLibrary
-          transaction.borrower = thisLibrary
-        else
-          transaction.lender = thisLibrary
-          transaction.borrower = otherLibrary
+          return deferred.promise()
 
 getRenewalInformation()
 -----------------------
@@ -168,9 +182,45 @@ is listed and is non-zero, renewals are possible. If renewals information is
 listed and is zero, renewals are not possible. If renewals information isn't
 listed, we're in am ambiguous state.
 
-        # "https://ill.sd00.worldcat.org/illpolicies/servicePolicy/#{inst_id}?wskey=#{wskey}"
-        # May not be there... in which case need something indicating ambiguity.
-        # transaction.canRenew
+        getRenewalInformation = (otherLibrary) ->
+          deferred = $.Deferred()
+
+          if not isBorrow
+
+Since this is a borrow, there's nothing to do here.
+
+            deferred.resolve()
+          else
+            if otherLibrary.id
+              $.ajax(crossDomainProxy,
+                data:
+                  csurl: "https://ill.sd00.worldcat.org/illpolicies/servicePolicy/#{otherLibrary.id}"
+                  wskey: wskey
+                dataType: 'xml'
+              )
+              .done((data) ->
+
+This is a little crude, since an institution can have multiple 'servicePolicy's,
+each of which could have a different value set for `ns8:renewPeriod`.
+
+                renewPeriod = document.evaluate('//ns8:renewPeriod', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue?.textContent
+
+                if not renewPeriod?
+                  transaction.canRenew = 'unknown'
+                else if renewPeriod = parseInt(renewPeriod) and renewPeriod > 0
+                    transaction.canRenew = true
+              )
+              .always(() ->
+                deferred.resolve()
+              )
+            else
+
+Can't do anything here, since we can't look anything up.
+
+              deferred.resolve()
+
+
+          return deferred.promise()
 
 renderBookstrap()
 -----------------
@@ -178,7 +228,7 @@ This function handles the actual rendering of the bookstrap from the mustache
 template in an iframe. It is called once the information-gathering AJAX calls to
 the ILL policies directory API have completed.
 
-        renderBookstrap = (transaction) ->
+        renderBookstrap = () ->
           frame = $('#strappy-iframe')
 
           frame = $(document.createElement('iframe')) if not frame[0]
@@ -218,6 +268,22 @@ Add the iframe to the document.
 
           $(document.body).append(frame)
 
+Now, start.
+
+        getOtherLibraryInformation()
+        .done((otherLibrary) ->
+          if isBorrow
+            transaction.lender = otherLibrary
+            transaction.borrower = thisLibrary
+          else
+            transaction.lender = thisLibrary
+            transaction.borrower = otherLibrary
+
+          getRenewalInformation(otherLibrary)
+          .done(() ->
+            renderBookstrap()
+          )
+        )
       )(jQuery.noConflict(), window._lodash)
 
 Startup

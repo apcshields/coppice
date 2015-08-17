@@ -2,4 +2,5 @@ wskey: ''
 thisLibrary:
   oclcSymbol: ''
   name: ''
+  host: ''
 crossDomainProxy: ''
