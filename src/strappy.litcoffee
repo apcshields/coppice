@@ -94,9 +94,7 @@ Get the currently active transaction panel.
 
 Figure out whether this is a loan or a borrow.
 
-        isBorrow = _.any(transactionPanel.attr('class').split(/\s+/), (_class) ->
-          _class.indexOf('nd:borrowing') isnt -1
-        )
+        isBorrow = transactionPanel.children('.requestView').attr('class').indexOf('nd-borrowing') isnt -1
 
 Collect transaction metadata.
 
