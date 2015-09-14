@@ -3,6 +3,7 @@ thisLibrary:
   oclcSymbol: ''
   name: ''
   host: ''
+  logo: ''
 crossDomainProxy: ''
 renewal:
   link: ''
