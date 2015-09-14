@@ -48,12 +48,7 @@ module.exports = (grunt) ->
 
             config = cson.parseCSONFile('config.default.cson')
             _.extend(config, cson.parseCSONFile('config.cson'))
-
-            # Read the logo image file into Base 64.
-            # See https://github.com/BrightcoveOS/grunt-base64/blob/2eb0204cf1eb07a934f7660ea71684f519fcaf15/tasks/base64.js#L17
-            if config.thisLibrary.logo and grunt.file.exists(config.thisLibrary.logo)
-              config.thisLibrary.logo = 'data:image/' + path.extname(config.thisLibrary.logo)[1..] + ';base64,' + grunt.file.read(config.thisLibrary.logo, { encoding: null }).toString('base64')
-
+            
             # Get the Handlebars strap template and the strap document (which has had the css minified and added).
             strapDocument = new String(fs.readFileSync('tmp/bookstrap.cssed.html'))
             strapDocument = strapDocument.replace(/\n/g, '').replace(/(\W)\s{2,}(\W)/g, '$1$2')

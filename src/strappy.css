@@ -4,7 +4,7 @@
 
 @media print {
   .bookstrap.visible-print-block {
-    margin: 2in 0.75in 1in;
+    margin: 1in 0.75in 1in;
   }
 }
 
@@ -35,6 +35,11 @@ body {
   text-decoration: underline;
 }
 
+h2 {
+  margin: 0;
+}
+
 .logo {
   width: 100%;
+  margin-bottom: 0.5in;
 }
