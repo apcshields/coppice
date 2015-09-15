@@ -39,7 +39,7 @@
     <p class="return_to">
       <strong>Patron, please return book to:</strong><br/>
       {{#if borrower.logo}}<img class="logo" src="{{borrower.logo}}" alt="">{{/if}}
-      <span class="value">{{#borrower.name}}{{.}}<br/>{{/borrower.name}}
+      <span class="value">{{#if borrower.name}}{{borrower.name}}<br/>{{/if}}
         {{borrower.host}} ({{borrower.oclcSymbol}})</span>
     </p>
   </div>
@@ -48,7 +48,7 @@
     <p class="loan_from">
       <strong>An Interlibrary Loan from:</strong><br/>
       {{#if lender.logo}}<img class="logo" src="{{lender.logo}}" alt="">{{/if}}
-      <span class="value">{{#lender.name}}{{.}}<br/>{{/lender.name}}
+      <span class="value">{{#if lender.name}}{{lender.name}}<br/>{{/if}}
         {{lender.host}} ({{lender.oclcSymbol}})</span>
     </p>
   </div>
