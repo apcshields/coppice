@@ -31,8 +31,12 @@ body {
   text-decoration: underline;
 }
 
-h2 {
-  margin: 0;
+.renew .can-renew-message, .renew.can-renew .cant-renew-message {
+  display: none;
+}
+
+.renew.can-renew .can-renew-message, .renew .cant-renew-message {
+  display: block;
 }
 
 .logo {

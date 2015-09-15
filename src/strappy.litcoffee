@@ -271,6 +271,19 @@ Set up the barcode (callback).
             frameDocument.find('body').append(bookstrap)
             frameDocument.find('.modal-body').append(modalBookstrap)
 
+Set up the renew control.
+
+            frameDocument.find('#cannot-renew-input').each((..., input) ->
+              $(input).prop('checked', true) if not transaction.canRenew
+            ).change((event) ->
+              renewInformation = frameDocument.find('.renew')
+
+              if $(event.target).is(':checked')
+                renewInformation.removeClass('can-renew')
+              else
+                renewInformation.addClass('can-renew')
+            )
+
 Set up the modal controls.
 
             hideFrame = () ->
