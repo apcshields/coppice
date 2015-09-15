@@ -249,6 +249,8 @@ barcode, and trigger the modal.
 
           bookstrap = $(bookstrapHandlebarsTemplate(transaction))
 
+Set up the barcode (callback).
+
           window._strappyBarcode = new Barcode({
             height: '0.5in',
             maxWidth: '2.5in',
@@ -269,6 +271,8 @@ barcode, and trigger the modal.
             frameDocument.find('body').append(bookstrap)
             frameDocument.find('.modal-body').append(modalBookstrap)
 
+Set up the modal controls.
+
             hideFrame = () ->
               frame.hide()
 
@@ -277,6 +281,8 @@ barcode, and trigger the modal.
               frame[0].contentWindow.print()
               hideFrame()
             )
+
+Show the frame and the modal.
 
             frame.show()
 
