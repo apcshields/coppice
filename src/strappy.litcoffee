@@ -93,15 +93,10 @@ Get the currently active transaction panel.
 
         transactionPanel = $('.yui3-viewpanel:not(.yui3-viewpanel-hidden):not(.sidebar-accordion)')
 
-Figure out whether this is a loan or a borrow.
-
-        isBorrow = transactionPanel.children('.requestView').attr('class').indexOf('nd-borrowing') isnt -1
-
 Collect transaction metadata.
 
         transaction =
           id: transactionPanel.find('.accordionRequestDetailsRequestId').text()
-          isBorrow: isBorrow
           item:
             title: transactionPanel.find('[data="resource.title"]').first().text()
             author: transactionPanel.find('[data="resource.author"]').text()
@@ -110,6 +105,10 @@ Collect transaction metadata.
           canRenew: false
           renewal:
             link: renewal.link
+
+Figure out whether this is a loan or a borrow.
+
+        transaction.isBorrow = transactionPanel.children('.requestView').attr('class').indexOf('nd-borrowing') isnt -1
 
 For some reason, loans don't use the `.yui-field-originalDueDate` syntax for the
 due date, so we have to search for the data field, which is consistent. N.B. It
@@ -203,7 +202,7 @@ listed, we're in am ambiguous state.
         getRenewalInformation = (otherLibrary) ->
           deferred = $.Deferred()
 
-          if not isBorrow
+          if not transaction.isBorrow
 
 Since this is a borrow, there's nothing to do here.
 
@@ -341,7 +340,7 @@ trigger the modal.
 
         getOtherLibraryInformation()
         .done((otherLibrary) ->
-          if isBorrow
+          if transaction.isBorrow
             transaction.lender = otherLibrary
             transaction.borrower = thisLibrary
           else
