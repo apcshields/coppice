@@ -4,6 +4,7 @@ thisLibrary:
   name: ''
   host: ''
   logo: ''
+  allowsLoanRenewals: false
 crossDomainProxy: ''
 renewal:
   link: ''

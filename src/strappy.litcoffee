@@ -7,6 +7,7 @@ Configuration Variables
       name: '''<%= thisLibrary.name %>'''
       host: '''<%= thisLibrary.host %>'''
       logo: '''<%= thisLibrary.logo %>'''
+      allowsLoanRenewals: <%= thisLibrary.allowsLoanRenewals %>
     crossDomainProxy = '''<%= crossDomainProxy %>'''
     renewal =
       link: '''<%= renewal.link %>'''
@@ -204,7 +205,9 @@ listed, we're in am ambiguous state.
 
           if not transaction.isBorrow
 
-Since this is a borrow, there's nothing to do here.
+Since this is a borrow, check whether this library allows renewals.
+
+            transaction.canRenew = thisLibrary.allowsLoanRenewals
 
             deferred.resolve()
           else
