@@ -25,8 +25,13 @@
     <div class="renew {{#if canRenew}}can-renew{{/if}}">
       <p class="can-renew-message">
         <span>You <strong>may</strong> be able to renew this item.<br/>
+          {{#if isBorrow~}}
           Request a renewal at <a>{{renewal.link}}</a><br/>
-          <strong>no later than</strong> {{renewal.dueDate}}</span>
+          <strong>no later than</strong> {{renewal.dueDate}}
+          {{~else~}}
+          Contact your library&#8217;s interlibrary loan department to request a renewal.
+          {{~/if}}
+        </span>
       </p>
       <p class="cant-renew-message">
         <span>No renewals</span>

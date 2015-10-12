@@ -101,6 +101,7 @@ Collect transaction metadata.
 
         transaction =
           id: transactionPanel.find('.accordionRequestDetailsRequestId').text()
+          isBorrow: isBorrow
           item:
             title: transactionPanel.find('[data="resource.title"]').first().text()
             author: transactionPanel.find('[data="resource.author"]').text()
