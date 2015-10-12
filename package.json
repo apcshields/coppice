@@ -1,9 +1,9 @@
 {
-  "name": "strappy",
+  "name": "coppice",
   "version": "0.1.0",
   "repository": "",
   "description": "Custom bookstrap generator for OCLC WMS Interlibrary Loan.",
-  "main": "strappy.js",
+  "main": "coppice.js",
   "dependencies": {},
   "devDependencies": {
     "cson": "^3.0.1",

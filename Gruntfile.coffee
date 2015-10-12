@@ -8,33 +8,33 @@ module.exports = (grunt) ->
         sourceMap: false
       default:
         files:
-          'tmp/strappy.js': 'tmp/strappy.tmpld.litcoffee'
+          'tmp/coppice.js': 'tmp/coppice.tmpld.litcoffee'
           'tmp/barcode.js': 'src/barcode/barcode.litcoffee'
     uglify:
       options:
         sourceMap: false
       default:
         files:
-          'tmp/strappy.ugly.js': 'tmp/strappy.concat.js'
+          'tmp/coppice.ugly.js': 'tmp/coppice.concat.js'
     concat:
       options:
         separator: ''
       default:
         files:
-          'tmp/strappy.concat.js': ['tmp/barcode.js', 'tmp/strappy.js']
+          'tmp/coppice.concat.js': ['tmp/barcode.js', 'tmp/coppice.js']
     clean:
       tmp: ['tmp/*']
       dist: ['dist/*']
     bookmarklet_wrapper:
       default:
         files:
-          'dist/strappy.js': ['tmp/strappy.ugly.js']
+          'dist/coppice.js': ['tmp/coppice.ugly.js']
     template:
       addCssToHtml:
         options:
           data: () ->
             {
-              css: fs.readFileSync('tmp/strappy.min.css')
+              css: fs.readFileSync('tmp/coppice.min.css')
             }
         files:
           'tmp/bookstrap.cssed.html': ['src/bookstrap.html']
@@ -48,7 +48,7 @@ module.exports = (grunt) ->
 
             config = cson.parseCSONFile('config.default.cson')
             _.extend(config, cson.parseCSONFile('config.cson'))
-            
+
             # Get the Handlebars strap template and the strap document (which has had the css minified and added).
             strapDocument = new String(fs.readFileSync('tmp/bookstrap.cssed.html'))
             strapDocument = strapDocument.replace(/\n/g, '').replace(/(\W)\s{2,}(\W)/g, '$1$2')
@@ -61,13 +61,13 @@ module.exports = (grunt) ->
 
             return config
         files:
-          'tmp/strappy.tmpld.litcoffee': ['src/strappy.litcoffee']
+          'tmp/coppice.tmpld.litcoffee': ['src/coppice.litcoffee']
     cssmin:
       options:
         sourceMap: false
       default:
         files:
-          'tmp/strappy.min.css': ['src/strappy.css']
+          'tmp/coppice.min.css': ['src/coppice.css']
   )
 
   grunt.loadNpmTasks('grunt-contrib-coffee')

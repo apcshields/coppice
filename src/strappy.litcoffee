@@ -254,13 +254,13 @@ barcode, and trigger the modal.
 
 Set up the barcode (callback).
 
-          window._strappyBarcode = new Barcode({
+          window._coppiceBarcode = new Barcode({
             height: '0.5in',
             maxWidth: '2.5in',
             thicknessFactor: 3
-          }) if not window._strappyBarcode?
+          }) if not window._coppiceBarcode?
 
-          _strappyBarcode.get(transaction.id)
+          _coppiceBarcode.get(transaction.id)
           .done((barcode) ->
             bookstrap.find('.barcode').prepend(barcode)
             barcode.next('.id').addClass('text-center').css('display', 'block').appendTo(barcode)
@@ -309,11 +309,11 @@ Now, start.
 
 Make the frame.
 
-        frame = $('#strappy-iframe')
+        frame = $('#coppice-iframe')
 
         frame = $(document.createElement('iframe')) if not frame[0]
 
-        frame.attr('id', 'strappy-iframe')
+        frame.attr('id', 'coppice-iframe')
         frame.attr('srcdoc', strapDocument)
         frame.attr('sandbox', 'allow-same-origin allow-scripts allow-modal')
 
