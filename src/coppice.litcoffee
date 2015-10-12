@@ -12,6 +12,9 @@ Configuration Variables
     renewal =
       link: '''<%= renewal.link %>'''
       daysBeforeDueDate: <%= renewal.daysBeforeDueDate %>
+    coppice =
+      version: '''<%= package.version %>'''
+      description: '''<%= package.description %>'''
 
 strapTemplate
 =============
@@ -357,6 +360,12 @@ trigger the modal.
 
 Startup
 =======
+
+Add a global object to report the version.
+
+    window.coppice = """Coppice v#{coppice.version}.
+    #{coppice.description}"""
+
 Conditionally load the various scripts that will make this much easier. Don't
 load them if their products already exist, if, for instance, the page hasn't
 been reloaded since the bookmarklet was last used.

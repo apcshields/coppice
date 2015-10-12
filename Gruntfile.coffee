@@ -59,6 +59,13 @@ module.exports = (grunt) ->
             config.strapDocument = strapDocument
             config.strapTemplate = strapTemplate
 
+            # Get Coppice's version from package.json.
+            packageMetadata = grunt.file.readJSON('package.json')
+
+            config.package =
+              version: packageMetadata.version
+              description: packageMetadata.description
+
             return config
         files:
           'tmp/coppice.tmpld.litcoffee': ['src/coppice.litcoffee']
