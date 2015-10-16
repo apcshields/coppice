@@ -76,6 +76,9 @@ dd {
 
 .theme-sandstone .jumbotron {
   background: rgba(239, 190, 109, 0.5);
+
+  border-top: 1px solid rgba(118, 78, 13, 0.1);
+  border-bottom: 1px solid rgba(118, 78, 13, 0.2);
 }
 
 .theme-sandstone .note {
