@@ -318,7 +318,7 @@ Make the frame.
 
         frame.attr('id', 'coppice-iframe')
         frame.attr('srcdoc', strapDocument)
-        frame.attr('sandbox', 'allow-same-origin allow-scripts allow-modal')
+        frame.attr('sandbox', 'allow-same-origin allow-scripts allow-modals')
 
         frame.css(
           top: 0
