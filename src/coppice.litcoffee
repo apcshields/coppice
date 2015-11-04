@@ -178,12 +178,12 @@ configured to accept an additional header on the 'OPTIONS' request.
               dataType: 'xml'
             )
             .done((data) ->
-              id = document.evaluate('//ns10:institutionId', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue?.textContent
+              id = data.evaluate('//ns10:institutionId', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue?.textContent
 
               otherLibrary.id = id if id?
 
-              otherLibrary.name = document.evaluate('//ns10:institutionAlias', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue?.textContent
-              otherLibrary.host = document.evaluate('//ns10:name', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue?.textContent
+              otherLibrary.name = data.evaluate('//ns10:institutionAlias', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue?.textContent
+              otherLibrary.host = data.evaluate('//ns10:name', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue?.textContent
 
               otherLibrary.name = '' if not otherLibrary.name?
               otherLibrary.host = '' if not otherLibrary.host?
@@ -226,7 +226,7 @@ Since this is a borrow, check whether this library allows renewals.
 This is a little crude, since an institution can have multiple 'servicePolicy's,
 each of which could have a different value set for `ns8:renewPeriod`.
 
-                renewPeriod = document.evaluate('//ns8:renewPeriod', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE).singleNodeValue?.textContent
+                renewPeriod = data.evaluate('//ns8:renewPeriod', data, worldcatNamespaceResolver, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue?.textContent
 
                 if not renewPeriod?
                   transaction.canRenew = 'unknown'
