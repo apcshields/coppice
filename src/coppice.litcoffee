@@ -119,9 +119,11 @@ due date, so we have to search for the data field, which is consistent. N.B. It
 may be either a static element or a form input, depending on the transaction
 status.
 
-        dueDateElement = transactionPanel.find('[data="returning.originalDueToSupplier"]')
+Note: Borrows use `'[data="returning.originalDueToSupplier"]'`. Loans need to
+use either `'[data="returning.dueToSupplier"]'`,
+`'[name="returning.originalDueToSupplier"]'`, or `'.dueDate'`.
 
-        transaction.dueDate = if dueDateElement.text() then dueDateElement.text() else dueDateElement.val()
+        transaction.dueDate = transactionPanel.find('[data="returning.originalDueToSupplier"]').text() or transactionPanel.find('.dueDate').val()
 
 Calculate the renewal deadline.
 
