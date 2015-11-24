@@ -1,6 +1,6 @@
 {
   "name": "coppice",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "repository": "https://github.com/apcshields/coppice.git",
   "description": "Custom bookstrap generator for OCLC WMS Interlibrary Loan.",
   "main": "coppice.js",
